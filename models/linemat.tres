@@ -11,4 +11,4 @@ shader_parameter/line_color = Color(0.86, 0.84, 0.72, 1)
 shader_parameter/dashed = true
 shader_parameter/dash_len = 3.0
 shader_parameter/dash_fill = 0.45
-shader_parameter/scroll_speed = 15.0
+shader_parameter/scroll_speed = 0.0
