@@ -19,7 +19,9 @@ void vertex() {
 
 void fragment() {
 	if (dashed) {
-		float z = wpos.z + TIME * scroll_speed;
+		// scroll the dashes toward the player (+z) so they flow with the
+		// world (obstacles/coins move toward +z at the same speed)
+		float z = wpos.z - TIME * scroll_speed;
 		float ph = fract(z / dash_len);
 		if (ph > dash_fill) {
 			discard;
