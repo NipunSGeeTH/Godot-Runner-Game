@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource path="res://shaders/environment.gdshader" type="Shader" id=1]
+
+[resource]
+render_priority = 6
+shader = ExtResource("1")
+shader_parameter/CURVATURE = 2.0
+shader_parameter/CURVATURE_ACTIVE = true
+shader_parameter/CURVATURE_DISTANCE = 110.0
+shader_parameter/color = Vector4(0.8, 0.79, 0.72, 1)
+shader_parameter/emission_energy = 0.35

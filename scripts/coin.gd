@@ -11,7 +11,7 @@ func _ready():
 	add_to_group("coins")
 
 func _process(delta):
-	global_translate(Vector3(0, 0, 0.25))
+	global_translate(Vector3(0, 0, 15.0 * delta))
 	rotate_y(5 * delta)
 	
 func timer_timeout():

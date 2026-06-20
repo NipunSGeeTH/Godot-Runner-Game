@@ -19,10 +19,11 @@ surfaces/0 = {
 
 [sub_resource type="ShaderMaterial" id=2]
 shader = ExtResource( 1 )
-shader_parameter/CURVATURE = 5.0
+shader_parameter/CURVATURE = 2.0
 shader_parameter/CURVATURE_ACTIVE = true
-shader_parameter/CURVATURE_DISTANCE = 30.0
-shader_parameter/color = Vector4(1, 0.8, 0, 0)
+shader_parameter/CURVATURE_DISTANCE = 110.0
+shader_parameter/color = Vector4(1, 0.82, 0.1, 0)
+shader_parameter/emission_energy = 1.6
 
 [sub_resource type="SphereShape3D" id=3]
 radius = 0.315239

@@ -6,8 +6,9 @@ uniform float CURVATURE;
 uniform bool CURVATURE_ACTIVE;
 uniform float CURVATURE_DISTANCE;
 
-uniform sampler2D BASE_TEX;
+uniform sampler2D BASE_TEX : source_color, hint_default_white;
 uniform vec4 color;
+uniform float emission_energy = 0.0;
 
 void vertex() {
 	if (CURVATURE_ACTIVE == true) {
@@ -25,5 +26,6 @@ void fragment() {
 	}
 	
 	ALBEDO = tex.rgb * color.rgb;
+	EMISSION = tex.rgb * color.rgb * emission_energy;
 	ALPHA  = tex.a;
 }

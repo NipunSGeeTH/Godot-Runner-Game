@@ -15,7 +15,7 @@ func _ready():
 
 # warning-ignore:unused_argument
 func _process(delta):
-	global_translate(Vector3(0, 0, 0.25))
+	global_translate(Vector3(0, 0, 15.0 * delta))
 
 
 func timer_timeout():
