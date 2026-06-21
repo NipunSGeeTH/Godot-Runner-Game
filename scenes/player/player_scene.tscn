@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://vqbje6mv5arl"]
+[gd_scene format=3 uid="uid://vqbje6mv5arl"]
 
 [ext_resource type="Script" uid="uid://71htmjvl5sa4" path="res://scripts/player_script.gd" id="2"]
 [ext_resource type="AudioStream" uid="uid://djijr0suhkcg5" path="res://sounds/coinpickup.wav" id="3"]
@@ -15,8 +15,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("1")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1488618441]
-transform = Transform3D(1, 0, 0, 0, 0.90630794, 0.42261797, 0, -0.42261797, 0.90630794, 0, 4.6, 7.4)
-fov = 52.0
+transform = Transform3D(1, 0, 0, 0, 0.90630794, 0.42261797, 0, -0.42261797, 0.90630794, 0, 3.2975473, 1.9860153)
+fov = 107.14613
 
 [node name="collision_area" type="Area3D" parent="." unique_id=1918826025]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
@@ -27,6 +27,7 @@ shape = SubResource("1")
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=823140027]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 stream = ExtResource("3")
-volume_db = 12.467
+volume_db = -4.0
+max_distance = 40.0
 
 [connection signal="area_entered" from="collision_area" to="." method="_on_collision_area_entered"]

@@ -162,8 +162,8 @@ func _setup_hud() -> void:
 	card.anchor_bottom = 0.5
 	card.offset_left = -220.0
 	card.offset_right = 220.0
-	card.offset_top = -160.0
-	card.offset_bottom = 160.0
+	card.offset_top = -180.0
+	card.offset_bottom = 180.0
 	card.add_theme_stylebox_override("panel", _card_style())
 
 	var title := Label.new()
@@ -186,22 +186,25 @@ func _setup_hud() -> void:
 	result_label.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
 	result_label.text = "Score 0     Coins 0"
 
-	var pill := Panel.new()
-	card.add_child(pill)
-	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pill.position = Vector2(90, 218)
-	pill.size = Vector2(260, 64)
-	pill.add_theme_stylebox_override("panel", _pill_style(Color(0.18, 0.72, 0.42)))
+	var play_again := Button.new()
+	card.add_child(play_again)
+	play_again.position = Vector2(50, 218)
+	play_again.size = Vector2(340, 58)
+	play_again.add_theme_font_size_override("font_size", 26)
+	play_again.text = "Play"
+	play_again.add_theme_stylebox_override("normal", _pill_style(Color(0.92, 0.95, 1.0)))
+	play_again.add_theme_color_override("font_color", Color(0.08, 0.1, 0.14))
+	play_again.pressed.connect(_restart)
 
-	var pill_label := Label.new()
-	pill.add_child(pill_label)
-	pill_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pill_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	pill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	pill_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	pill_label.add_theme_font_size_override("font_size", 28)
-	pill_label.add_theme_color_override("font_color", Color.WHITE)
-	pill_label.text = "TAP TO RESTART"
+	var menu_btn := Button.new()
+	card.add_child(menu_btn)
+	menu_btn.position = Vector2(50, 286)
+	menu_btn.size = Vector2(340, 52)
+	menu_btn.add_theme_font_size_override("font_size", 22)
+	menu_btn.add_theme_color_override("font_color", Color(0.85, 0.72, 0.35))
+	menu_btn.text = "Menu"
+	menu_btn.add_theme_stylebox_override("normal", _pill_style(Color(0.12, 0.14, 0.2)))
+	menu_btn.pressed.connect(_go_menu)
 
 func _chip_style() -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
@@ -252,9 +255,6 @@ func _play_run() -> void:
 # --- input: swipe to change lane / jump, tap to restart ---------------------
 func _unhandled_input(event: InputEvent) -> void:
 	if game_over:
-		if (event is InputEventScreenTouch and event.pressed) \
-		or (event is InputEventMouseButton and event.pressed):
-			_restart()
 		return
 
 	if event is InputEventScreenTouch:
@@ -288,6 +288,11 @@ func _change_lane(dir: int) -> void:
 func _restart() -> void:
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+
+
+func _go_menu() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 func _physics_process(delta: float) -> void:
 	if game_over:

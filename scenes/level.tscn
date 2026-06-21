@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://hkwwvyk01snk"]
+[gd_scene format=3 uid="uid://hkwwvyk01snk"]
 
 [ext_resource type="PackedScene" uid="uid://vqbje6mv5arl" path="res://scenes/player/player_scene.tscn" id="2"]
 [ext_resource type="Material" path="res://models/ground_grass.tres" id="3"]
@@ -7,8 +7,8 @@
 [ext_resource type="Material" path="res://models/edgemat.tres" id="8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
-sky_horizon_color = Color(0.66, 0.72, 0.82, 1)
 sky_top_color = Color(0.36, 0.56, 0.86, 1)
+sky_horizon_color = Color(0.66, 0.72, 0.82, 1)
 ground_bottom_color = Color(0.55, 0.62, 0.62, 1)
 ground_horizon_color = Color(0.66, 0.72, 0.82, 1)
 
@@ -19,15 +19,14 @@ sky_material = SubResource("SkyMat")
 background_mode = 2
 sky = SubResource("Sky")
 ambient_light_source = 3
-ambient_light_energy = 1.0
 tonemap_mode = 2
 fog_enabled = true
 fog_mode = 1
 fog_light_color = Color(0.72, 0.78, 0.86, 1)
 fog_density = 1.0
+fog_depth_curve = 1.2
 fog_depth_begin = 18.0
 fog_depth_end = 54.0
-fog_depth_curve = 1.2
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(200, 130)
@@ -41,11 +40,11 @@ size = Vector2(0.32, 130)
 [node name="level" type="Node" unique_id=14483789]
 script = ExtResource("5")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1635974986]
 environment = SubResource("Env")
 
 [node name="player_body" parent="." unique_id=1207048013 instance=ExtResource("2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.10656583, 0.014107734, 0.15667295)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11409986, -0.0070681274, 0.17034626)
 
 [node name="spawn_timer" type="Timer" parent="." unique_id=1524893611]
 wait_time = 1.5

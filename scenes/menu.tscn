@@ -1,68 +1,12 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8menurunner01"]
 
-[sub_resource type="GDScript" id="1"]
-script/source = "extends Control
-
-func _ready() -> void:
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var bg := ColorRect.new()
-	add_child(bg)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.09, 0.13, 0.20)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var center := VBoxContainer.new()
-	add_child(center)
-	center.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	center.alignment = BoxContainer.ALIGNMENT_CENTER
-	center.add_theme_constant_override(\"separation\", 30)
-	center.offset_left = -260
-	center.offset_right = 260
-	center.offset_top = -160
-	center.offset_bottom = 160
-
-	var title := Label.new()
-	center.add_child(title)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override(\"font_size\", 92)
-	title.add_theme_color_override(\"font_color\", Color(1, 0.85, 0.3))
-	title.add_theme_color_override(\"font_outline_color\", Color(0, 0, 0, 0.6))
-	title.add_theme_constant_override(\"outline_size\", 8)
-	title.text = \"RUNNER\"
-
-	var start := Button.new()
-	center.add_child(start)
-	start.custom_minimum_size = Vector2(360, 86)
-	start.add_theme_font_size_override(\"font_size\", 42)
-	start.text = \"START GAME\"
-	start.add_theme_stylebox_override(\"normal\", _pill(Color(0.18, 0.72, 0.42)))
-	start.add_theme_stylebox_override(\"hover\", _pill(Color(0.22, 0.82, 0.5)))
-	start.add_theme_stylebox_override(\"pressed\", _pill(Color(0.14, 0.6, 0.36)))
-	start.pressed.connect(_on_start)
-
-	var hint := Label.new()
-	center.add_child(hint)
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override(\"font_size\", 18)
-	hint.add_theme_color_override(\"font_color\", Color(0.7, 0.78, 0.9, 0.8))
-	hint.text = \"Swipe / A D to change lane     Space / Swipe up to jump\"
-
-func _pill(c: Color) -> StyleBoxFlat:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = c
-	sb.set_corner_radius_all(18)
-	sb.content_margin_left = 18
-	sb.content_margin_right = 18
-	sb.content_margin_top = 8
-	sb.content_margin_bottom = 8
-	return sb
-
-func _on_start() -> void:
-	get_tree().change_scene_to_file(\"res://scenes/level.tscn\")
-"
+[ext_resource type="Script" path="res://scripts/menu.gd" id="1"]
 
 [node name="menu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
-script = SubResource("1")
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
