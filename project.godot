@@ -24,6 +24,7 @@ SimConstants="*res://scripts/secure/sim_constants.gd"
 MoveLog="*res://scripts/secure/move_log.gd"
 RunSession="*res://scripts/secure/run_session.gd"
 ApiClient="*res://scripts/secure/api_client.gd"
+AuthSession="*res://scripts/secure/auth_session.gd"
 
 [display]
 

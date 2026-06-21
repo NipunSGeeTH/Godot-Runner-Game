@@ -27,7 +27,7 @@ func post_with_jwt(path: String, body_dict: Dictionary = {}) -> void:
 	post_with_headers(path, body_dict, headers)
 
 
-func post_with_headers(path: String, body_dict: Dictionary, headers: PackedStringArray) -> void {
+func post_with_headers(path: String, body_dict: Dictionary, headers: PackedStringArray) -> void:
 	var body := JSON.stringify(body_dict)
 	var url := _full_url(path)
 	_log("POST %s -> %s" % [path, url])
@@ -63,6 +63,20 @@ func post_signed(path: String, body_dict: Dictionary) -> void:
 	if err != OK:
 		_pop_pending()
 		_log("POST %s failed to start (err %d)" % [path, err])
+		request_finished.emit(path, false, 0, {"error": "request_failed", "code": err})
+
+
+func get_json(path: String) -> void:
+	var url := _full_url(path)
+	_log("GET %s -> %s" % [path, url])
+	_pending_paths.append(path)
+	var headers: PackedStringArray = []
+	if AuthSession.is_logged_in():
+		headers.append("Authorization: Bearer " + AuthSession.token)
+	var err := _http.request(url, headers)
+	if err != OK:
+		_pop_pending()
+		_log("GET %s failed to start (err %d)" % [path, err])
 		request_finished.emit(path, false, 0, {"error": "request_failed", "code": err})
 
 

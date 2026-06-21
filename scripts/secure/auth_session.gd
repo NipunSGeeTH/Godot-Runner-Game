@@ -17,7 +17,7 @@ func set_auth(body: Dictionary) -> void:
 	token = str(body.get("token", ""))
 	user_id = int(body.get("user_id", 0))
 	index_number = str(body.get("index_number", ""))
-	username = str(body.get("username", ""))
+	username = str(body.get("username", body.get("name", "")))
 	best_coins = int(body.get("best_coins", 0))
 
 

@@ -9,7 +9,7 @@ var signing_secret: PackedByteArray = PackedByteArray()
 var run_id: String = ""
 var segment_index: int = 0
 var current_seed: int = 0
-var verified_score: int = 0
+var run_total_coins: int = 0
 var offline_mode: bool = true
 var run_active: bool = false
 
@@ -35,6 +35,9 @@ func prepare_run() -> void:
 	if SimConstants.API_BASE.is_empty():
 		_start_offline_run("")
 		return
+	if not AuthSession.is_logged_in():
+		run_ready.emit(false, "Login required before play")
+		return
 	offline_mode = false
 	_start_online_run()
 
@@ -42,6 +45,9 @@ func prepare_run() -> void:
 func restart_run() -> void:
 	if SimConstants.API_BASE.is_empty():
 		_start_offline_run("")
+		return
+	if not AuthSession.is_logged_in():
+		run_ready.emit(false, "Login required")
 		return
 	offline_mode = false
 	run_active = false
@@ -58,7 +64,7 @@ func _start_offline_run(error_hint: String) -> void:
 	run_id = _random_id()
 	segment_index = 0
 	current_seed = _random_segment_seed()
-	verified_score = 0
+	run_total_coins = 0
 	run_active = true
 	if error_hint != "":
 		push_warning("Secure run: offline fallback — %s" % error_hint)
@@ -92,13 +98,13 @@ func advance_offline_segment(payload: Dictionary) -> void:
 	print("[RunSession] checkpoint (offline): ", JSON.stringify(payload))
 	segment_index += 1
 	current_seed = _random_segment_seed()
-	verified_score += _estimate_segment_score(payload)
+	run_total_coins += _count_coins_in_payload(payload)
 	checkpoint_resolved.emit(true, {
 		"accepted": true,
 		"next_seed": current_seed,
 		"next_segment_index": segment_index,
-		"segment_score": _estimate_segment_score(payload),
-		"run_total_score": verified_score,
+		"segment_coins": _count_coins_in_payload(payload),
+		"run_total_coins": run_total_coins,
 	})
 
 
@@ -158,7 +164,7 @@ func _on_api_response(path: String, success: bool, status: int, body: Dictionary
 			run_id = str(body.get("run_id", ""))
 			segment_index = int(body.get("segment_index", 0))
 			current_seed = int(body.get("seed", _random_segment_seed()))
-			verified_score = 0
+			run_total_coins = 0
 			run_active = true
 			offline_mode = false
 			_log("run_id=%s seed=%d (online)" % [run_id, current_seed])
@@ -170,10 +176,10 @@ func _on_api_response(path: String, success: bool, status: int, body: Dictionary
 	if path == "/v1/run/checkpoint":
 		_waiting_checkpoint = false
 		if success and body.get("accepted", false):
-			verified_score = int(body.get("run_total_coins", body.get("run_total_score", verified_score)))
+			run_total_coins = int(body.get("run_total_coins", body.get("run_total_score", run_total_coins)))
 			segment_index = int(body.get("next_segment_index", segment_index + 1))
 			current_seed = int(body.get("next_seed", _random_segment_seed()))
-			_log("checkpoint accepted score=%d next_seed=%d" % [verified_score, current_seed])
+			_log("checkpoint accepted coins=%d next_seed=%d" % [run_total_coins, current_seed])
 			checkpoint_resolved.emit(true, body)
 		else:
 			push_warning("Checkpoint rejected: %s" % str(body))
@@ -182,9 +188,10 @@ func _on_api_response(path: String, success: bool, status: int, body: Dictionary
 
 	if path == "/v1/run/finish":
 		run_active = false
-		if success:
-			verified_score = int(body.get("final_score", verified_score))
-			_log("finish accepted score=%d" % verified_score)
+		if success and (body.get("accepted", false) or body.has("final_coins")):
+			run_total_coins = int(body.get("final_coins", body.get("final_score", run_total_coins)))
+			AuthSession.best_coins = int(body.get("best_coins", AuthSession.best_coins))
+			_log("finish accepted coins=%d rank=%s" % [run_total_coins, str(body.get("rank", "?"))])
 		else:
 			push_warning("Finish rejected: %s" % str(body))
 		finish_resolved.emit(success, body)
@@ -204,13 +211,12 @@ func _format_api_error(label: String, status: int, body: Dictionary) -> String:
 	return "%s HTTP %d — %s" % [label, status, err]
 
 
-func _estimate_segment_score(payload: Dictionary) -> int:
-	var dist: float = float(payload.get("final_distance", 0.0))
+func _count_coins_in_payload(payload: Dictionary) -> int:
 	var coins: int = 0
 	for e in payload.get("events", []):
 		if e is Dictionary and e.get("kind", "") == "coin":
 			coins += 1
-	return int(dist * SimConstants.DISTANCE_SCORE_PER_UNIT) + coins * SimConstants.COIN_SCORE
+	return coins
 
 
 func _random_segment_seed() -> int:

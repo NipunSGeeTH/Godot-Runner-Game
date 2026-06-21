@@ -29,13 +29,14 @@ var dying: bool = false
 var game_over: bool = false
 var coin_count: int = 0
 
-var score: float = 0.0
-
 var coin_label: Label
 var score_label: Label
 var overlay: Control
 var result_label: Label
 var hint_label: Label
+
+var _finish_data: Dictionary = {}
+var _finish_done: bool = false
 
 # swipe tracking
 var _touch_start: Vector2 = Vector2.ZERO
@@ -58,6 +59,11 @@ func _ready() -> void:
 	if run_anim != "":
 		anim_player.get_animation(run_anim).loop_mode = Animation.LOOP_LINEAR
 	_play_run()
+	if not RunSession.checkpoint_resolved.is_connected(_on_checkpoint_resolved):
+		RunSession.checkpoint_resolved.connect(_on_checkpoint_resolved)
+	if not RunSession.finish_resolved.is_connected(_on_finish_resolved):
+		RunSession.finish_resolved.connect(_on_finish_resolved)
+	_refresh_coin_hud()
 
 # Load the boy model, turn it to face the camera, and wire its AnimationPlayer.
 func _spawn_character() -> void:
@@ -118,7 +124,7 @@ func _setup_hud() -> void:
 	score_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	score_label.add_theme_font_size_override("font_size", 28)
 	score_label.add_theme_color_override("font_color", Color(0.85, 0.93, 1.0))
-	score_label.text = "SCORE 0"
+	score_label.text = "COINS 0"
 
 	# ---- controls hint (bottom-center, fades out) ----
 	hint_label = Label.new()
@@ -135,7 +141,7 @@ func _setup_hud() -> void:
 	hint_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.92))
 	hint_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 	hint_label.add_theme_constant_override("outline_size", 5)
-	hint_label.text = "Swipe  <  >  to change lane     Swipe  ^  to jump"
+	hint_label.text = "Swipe  <  >  lane     Swipe  ^  jump     Collect coins!"
 	var tw := create_tween()
 	tw.tween_interval(4.0)
 	tw.tween_property(hint_label, "modulate:a", 0.0, 1.2)
@@ -205,6 +211,22 @@ func _setup_hud() -> void:
 	menu_btn.text = "Menu"
 	menu_btn.add_theme_stylebox_override("normal", _pill_style(Color(0.12, 0.14, 0.2)))
 	menu_btn.pressed.connect(_go_menu)
+
+func _refresh_coin_hud() -> void:
+	coin_label.text = str(coin_count)
+	score_label.text = "COINS %d" % coin_count
+
+
+func _on_checkpoint_resolved(accepted: bool, data: Dictionary) -> void:
+	if accepted:
+		coin_count = int(data.get("run_total_coins", coin_count))
+		_refresh_coin_hud()
+
+
+func _on_finish_resolved(_success: bool, data: Dictionary) -> void:
+	_finish_data = data
+	_finish_done = true
+
 
 func _chip_style() -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
@@ -323,9 +345,8 @@ func _physics_process(delta: float) -> void:
 			_start_death()
 		return
 
-	# distance score keeps climbing while you run
-	score += delta * 12.0
-	score_label.text = "SCORE " + str(int(score))
+	# coins-only score — distance does not count
+	_refresh_coin_hud()
 
 	# keyboard fallback so it's also playable on desktop
 	if Input.is_action_just_pressed("move_left"):
@@ -370,6 +391,8 @@ func _physics_process(delta: float) -> void:
 
 func _start_death() -> void:
 	dying = true
+	_finish_done = RunSession.offline_mode
+	_finish_data = {}
 	if death_anim != "":
 		var a := anim_player.get_animation(death_anim)
 		if a:
@@ -383,11 +406,29 @@ func _start_death() -> void:
 			m.rotate_x(-PI / 2.0)
 	# Let the death play out on the road before the game-over card appears.
 	await get_tree().create_timer(1.2).timeout
+	if not RunSession.offline_mode:
+		var waited: float = 0.0
+		while not _finish_done and waited < 3.0:
+			await get_tree().create_timer(0.1).timeout
+			waited += 0.1
 	_trigger_game_over()
+
 
 func _trigger_game_over() -> void:
 	game_over = true
-	result_label.text = "Score %d     Coins %d" % [int(score), coin_count]
+	var lines: PackedStringArray = PackedStringArray()
+	var display_coins: int = coin_count
+	if _finish_data.has("final_coins"):
+		display_coins = int(_finish_data.get("final_coins", coin_count))
+	lines.append("Coins %d" % display_coins)
+	if _finish_data.has("rank") or _finish_data.has("best_coins"):
+		var rank: int = int(_finish_data.get("rank", 0))
+		var best: int = int(_finish_data.get("best_coins", AuthSession.best_coins))
+		if rank > 0:
+			lines.append("Rank #%d  ·  Best %d" % [rank, best])
+		else:
+			lines.append("Best %d coins" % best)
+	result_label.text = "\n".join(lines)
 	overlay.visible = true
 	overlay.modulate.a = 0.0
 	var tw := create_tween()
@@ -399,7 +440,7 @@ func _on_collision_area_entered(area):
 	if parent.is_in_group("coins"):
 		audio_player.play()
 		coin_count += 1
-		coin_label.text = str(coin_count)
+		_refresh_coin_hud()
 		var level := get_tree().get_first_node_in_group("level")
 		if level and level.has_method("get_segment_distance"):
 			var oid: int = int(parent.get_meta("object_id", -1))
