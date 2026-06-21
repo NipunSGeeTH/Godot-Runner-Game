@@ -96,7 +96,7 @@ func _build_ui() -> void:
 	_add_menu_button(root, "BUY TICKET", Color(0.72, 0.48, 0.1), _on_buy_ticket)
 	_add_menu_button(root, "HOW TO PLAY", Color(0.22, 0.38, 0.72), func(): _show_overlay(
 		"How to Play",
-		"Login with your index number first.\n\nSwipe left or right to change lane.\n\nSwipe up to jump over rocks.\n\nCollect coins — only coins count for score!"
+		"Login with your index number and phone first.\n\nSwipe left or right to change lane.\n\nSwipe up to jump over rocks.\n\nCollect coins — only coins count for score!"
 	))
 	_sound_btn = _add_menu_button(root, "", Color(0.28, 0.32, 0.42), _on_toggle_sound)
 	_refresh_sound_label()
@@ -190,7 +190,7 @@ func _try_show_leaderboard() -> void:
 		if row is Dictionary:
 			lines.append("#%s  %s  —  %d coins" % [
 				row.get("rank", "?"),
-				row.get("username", "?"),
+				row.get("name", row.get("username", "?")),
 				row.get("coins", 0),
 			])
 	if AuthSession.is_logged_in() and not _lb_me.is_empty():

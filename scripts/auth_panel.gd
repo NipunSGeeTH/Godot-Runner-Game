@@ -6,9 +6,8 @@ var _mode: String = "login"
 var _panel: PanelContainer
 var _title: Label
 var _index_field: LineEdit
-var _username_field: LineEdit
-var _password_field: LineEdit
-var _contact_field: LineEdit
+var _name_field: LineEdit
+var _phone_field: LineEdit
 var _status: Label
 var _submit_btn: Button
 var _toggle_btn: Button
@@ -49,9 +48,8 @@ func _build_ui() -> void:
 	_title.add_theme_color_override("font_color", Color(1, 0.88, 0.35))
 
 	_index_field = _field(box, "Index number")
-	_username_field = _field(box, "Username")
-	_password_field = _field(box, "Password", true)
-	_contact_field = _field(box, "Contact (optional)")
+	_name_field = _field(box, "Name (leaderboard)")
+	_phone_field = _field(box, "Phone number")
 
 	_status = Label.new()
 	box.add_child(_status)
@@ -75,14 +73,12 @@ func _build_ui() -> void:
 	_set_mode("login")
 
 
-func _field(parent: Control, placeholder: String, secret: bool = false) -> LineEdit:
+func _field(parent: Control, placeholder: String) -> LineEdit:
 	var f := LineEdit.new()
 	parent.add_child(f)
 	f.placeholder_text = placeholder
 	f.custom_minimum_size = Vector2(0, 52)
 	f.add_theme_font_size_override("font_size", 22)
-	if secret:
-		f.secret = true
 	return f
 
 
@@ -110,8 +106,9 @@ func _set_mode(mode: String) -> void:
 	_mode = mode
 	var is_login := mode == "login"
 	_title.text = "Login" if is_login else "Register"
-	_username_field.visible = not is_login
-	_contact_field.visible = not is_login
+	_name_field.visible = not is_login
+	_name_field.placeholder_text = "Name (leaderboard)" if not is_login else ""
+	_phone_field.placeholder_text = "Phone number"
 	_submit_btn.text = "LOGIN" if is_login else "REGISTER"
 	_submit_btn.add_theme_stylebox_override("normal", _pill(Color(0.16, 0.72, 0.4) if is_login else Color(0.22, 0.38, 0.72)))
 	_toggle_btn.text = "Need an account? Register" if is_login else "Already registered? Login"
@@ -126,9 +123,9 @@ func _on_submit() -> void:
 	if _busy:
 		return
 	var index_num := _index_field.text.strip_edges()
-	var password := _password_field.text
-	if index_num == "" or password == "":
-		_status.text = "Index number and password required."
+	var phone := _phone_field.text.strip_edges()
+	if index_num == "" or phone == "":
+		_status.text = "Index number and phone are required."
 		return
 
 	_busy = true
@@ -138,24 +135,20 @@ func _on_submit() -> void:
 	if _mode == "login":
 		ApiClient.post_unsigned("/v1/auth/login", {
 			"index_number": index_num,
-			"password": password,
+			"phone_number": phone,
 		})
 	else:
-		var username := _username_field.text.strip_edges()
-		if username == "":
-			_status.text = "Username required."
+		var display_name := _name_field.text.strip_edges()
+		if display_name == "":
+			_status.text = "Name is required for registration."
 			_busy = false
 			_submit_btn.disabled = false
 			return
-		var body := {
+		ApiClient.post_unsigned("/v1/auth/register", {
 			"index_number": index_num,
-			"username": username,
-			"password": password,
-		}
-		var contact := _contact_field.text.strip_edges()
-		if contact != "":
-			body["contact_number"] = contact
-		ApiClient.post_unsigned("/v1/auth/register", body)
+			"name": display_name,
+			"phone_number": phone,
+		})
 
 
 func _on_api_response(path: String, success: bool, status: int, body: Dictionary) -> void:

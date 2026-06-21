@@ -1,6 +1,6 @@
 extends Node
 
-const SIM_VERSION: int = 3
+const SIM_VERSION: int = 6
 
 const NUM_LANES: int = 3
 const LANE_X: Array = [-2.0, 0.0, 2.0]
@@ -30,9 +30,20 @@ const SECURE_SPAWNS: bool = true
 
 const SPAWN_Z: float = -50.0
 const SPAWN_LEAD: float = 55.0
-const MIN_ROCK_GAP: float = 55.0
-const MIN_COIN_GAP: float = 8.0
-const COIN_CHUNK_THRESHOLD: float = 0.05
-const COIN_COUNT_MIN: int = 8
-const COIN_COUNT_MAX: int = 14
-const COIN_SECOND_WAVE_CHANCE: float = 0.45
+
+# --- spawn density (segment_map.gd) — max practical density ---
+const MIN_ROCK_GAP: float = 18.0
+const MIN_COIN_GAP: float = 4.0
+const ROCKS_PER_CHUNK_MIN: int = 8
+const ROCKS_PER_CHUNK_MAX: int = 15
+const BARRIER_CHUNK_CHANCE: float = 0.48
+const BARRIER_SYNC_JITTER: float = 0.6
+const BARRIER_COIN_MIN: int = 10
+const BARRIER_COIN_MAX: int = 18
+const COIN_LINES_MIN: int = 4
+const COIN_LINES_MAX: int = 8
+const COIN_COUNT_MIN: int = 14
+const COIN_COUNT_MAX: int = 22
+const EXTRA_COIN_BURST_CHANCE: float = 0.82
+const EXTRA_COIN_BURST_MIN: int = 10
+const EXTRA_COIN_BURST_MAX: int = 16

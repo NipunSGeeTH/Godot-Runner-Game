@@ -10,4 +10,5 @@ func _init() -> void:
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		f.store_string(JSON.stringify(entries, "\t"))
 		f.close()
+		print("wrote ", path, " entries=", entries.size())
 	quit()
