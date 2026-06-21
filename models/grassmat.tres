@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://co7vtpeqst3c7"]
 
-[ext_resource path="res://shaders/ground.gdshader" type="Shader" id=1]
+[ext_resource type="Shader" uid="uid://csu5pl3v8k1bs" path="res://shaders/ground.gdshader" id="1"]
 
 [resource]
 render_priority = 0
@@ -8,5 +8,5 @@ shader = ExtResource("1")
 shader_parameter/CURVATURE = 2.0
 shader_parameter/CURVATURE_DISTANCE = 110.0
 shader_parameter/grass_dark = Color(0.03, 0.13, 0.04, 1)
-shader_parameter/grass_light = Color(0.09, 0.27, 0.10, 1)
-shader_parameter/dirt_color = Color(0.20, 0.16, 0.10, 1)
+shader_parameter/grass_light = Color(0.09, 0.27, 0.1, 1)
+shader_parameter/dirt_color = Color(0.2, 0.16, 0.1, 1)

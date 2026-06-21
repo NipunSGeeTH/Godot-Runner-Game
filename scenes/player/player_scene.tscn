@@ -1,6 +1,5 @@
-[gd_scene load_steps=5 format=3 uid="uid://crunnerplayer01"]
+[gd_scene load_steps=3 format=3 uid="uid://vqbje6mv5arl"]
 
-[ext_resource type="PackedScene" uid="uid://p0662dw0svsj" path="res://models/human/man.glb" id="1"]
 [ext_resource type="Script" uid="uid://71htmjvl5sa4" path="res://scripts/player_script.gd" id="2"]
 [ext_resource type="AudioStream" uid="uid://djijr0suhkcg5" path="res://sounds/coinpickup.wav" id="3"]
 
@@ -8,26 +7,24 @@
 radius = 0.4
 height = 1.8
 
-[node name="player_body" type="CharacterBody3D"]
+[node name="player_body" type="CharacterBody3D" unique_id=1073408682]
 script = ExtResource("2")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1344544025]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("1")
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 5, 7)
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1488618441]
+transform = Transform3D(1, 0, 0, 0, 0.90630794, 0.42261797, 0, -0.42261797, 0.90630794, 0, 4.6, 7.4)
+fov = 52.0
 
-[node name="player" parent="." instance=ExtResource("1")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
-
-[node name="collision_area" type="Area3D" parent="."]
+[node name="collision_area" type="Area3D" parent="." unique_id=1918826025]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 
-[node name="collision_shape" type="CollisionShape3D" parent="collision_area"]
+[node name="collision_shape" type="CollisionShape3D" parent="collision_area" unique_id=637566619]
 shape = SubResource("1")
 
-[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="." unique_id=823140027]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 stream = ExtResource("3")
 volume_db = 12.467

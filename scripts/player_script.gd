@@ -1,7 +1,9 @@
 extends CharacterBody3D
 
+const PLAYER_MODEL: String = "res://models/boy/Rogue.glb"
+
 @onready var audio_player: AudioStreamPlayer3D = $AudioStreamPlayer3D
-@onready var anim_player: AnimationPlayer = $player/AnimationPlayer
+var anim_player: AnimationPlayer
 
 const JUMP_FORCE: float = 9.0
 const GRAVITY: float = 22.0
@@ -19,9 +21,11 @@ var jump_requested: bool = false
 
 var run_anim: String = ""
 var jump_anim: String = ""
+var death_anim: String = ""
 var is_jumping: bool = false
 
 var is_dead: bool = false
+var dying: bool = false
 var game_over: bool = false
 var coin_count: int = 0
 
@@ -44,15 +48,26 @@ func _ready() -> void:
 	# rocks look for an area in this group to know they hit the player
 	$collision_area.add_to_group("player_skeleton")
 
-	_detail_character()
+	_spawn_character()
 	_setup_hud()
 
 	ground_y = global_transform.origin.y
-	run_anim = _find_anim("Man_Run")
-	jump_anim = _find_anim("Man_Jump")
+	run_anim = _find_anim(["Running_A", "Run"])
+	jump_anim = _find_anim(["Jump_Full_Long", "Jump"])
+	death_anim = _find_anim(["Death_A", "Death"])
 	if run_anim != "":
 		anim_player.get_animation(run_anim).loop_mode = Animation.LOOP_LINEAR
 	_play_run()
+
+# Load the boy model, turn it to face the camera, and wire its AnimationPlayer.
+func _spawn_character() -> void:
+	var model := (load(PLAYER_MODEL) as PackedScene).instantiate()
+	model.name = "player"
+	var s: float = 0.85
+	# 180 deg about Y so the boy faces the camera (front toward viewer).
+	model.transform = Transform3D(Basis(Vector3.UP, PI).scaled(Vector3(s, s, s)), Vector3.ZERO)
+	add_child(model)
+	anim_player = model.get_node("AnimationPlayer")
 
 func _setup_hud() -> void:
 	# Put the HUD on a CanvasLayer so it always fills the screen.
@@ -222,47 +237,12 @@ func _pill_style(c: Color) -> StyleBoxFlat:
 	sb.set_corner_radius_all(32)
 	return sb
 
-# Give the character distinct, detailed colours per body part.
-func _detail_character() -> void:
-	var mi := _find_char_mesh(self)
-	if mi == null or mi.mesh == null:
-		return
-	var palette := {
-		"Hair": Color(0.04, 0.04, 0.05),   # near-black hair
-		"Skin": Color(0.83, 0.62, 0.47),   # warm skin tone
-		"Eyes": Color(0.06, 0.06, 0.08),   # dark eyes
-		"Shirt": Color(0.85, 0.27, 0.16),  # bright red/orange jersey
-		"Pants": Color(0.13, 0.17, 0.34),  # denim blue trousers
-	}
-	for i in mi.mesh.get_surface_count():
-		var nm := String(mi.mesh.surface_get_name(i))
-		var col: Color = palette.get(nm, Color(0.7, 0.7, 0.7))
-		var sm := StandardMaterial3D.new()
-		sm.albedo_color = col
-		sm.roughness = 0.85
-		sm.metallic = 0.0
-		if nm == "Shirt":
-			# subtle two-tone sheen so the top reads as a sporty fabric
-			sm.roughness = 0.6
-			sm.rim_enabled = true
-			sm.rim = 0.4
-		mi.set_surface_override_material(i, sm)
-
-func _find_char_mesh(n: Node) -> MeshInstance3D:
-	if n is MeshInstance3D:
-		var mi := n as MeshInstance3D
-		if mi.mesh != null and mi.mesh.get_surface_count() >= 4:
-			return mi
-	for c in n.get_children():
-		var r := _find_char_mesh(c)
-		if r != null:
-			return r
-	return null
-
-func _find_anim(target: String) -> String:
-	for a in anim_player.get_animation_list():
-		if target.to_lower() in String(a).to_lower():
-			return a
+func _find_anim(targets: Array) -> String:
+	for target in targets:
+		var t: String = String(target).to_lower()
+		for a in anim_player.get_animation_list():
+			if t in String(a).to_lower():
+				return a
 	return ""
 
 func _play_run() -> void:
@@ -314,7 +294,10 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if is_dead:
-		_trigger_game_over()
+		# Hit a rock: play the death animation and crumple onto the road,
+		# THEN show the game-over card (instead of freezing instantly).
+		if not dying:
+			_start_death()
 		return
 
 	# distance score keeps climbing while you run
@@ -356,6 +339,23 @@ func _physics_process(delta: float) -> void:
 
 	global_transform.origin = pos
 
+func _start_death() -> void:
+	dying = true
+	if death_anim != "":
+		var a := anim_player.get_animation(death_anim)
+		if a:
+			a.loop_mode = Animation.LOOP_NONE
+		anim_player.play(death_anim)
+	else:
+		# No death clip on this rig: just stop running and topple over on the road.
+		anim_player.stop()
+		var m := get_node_or_null("player") as Node3D
+		if m:
+			m.rotate_x(-PI / 2.0)
+	# Let the death play out on the road before the game-over card appears.
+	await get_tree().create_timer(1.2).timeout
+	_trigger_game_over()
+
 func _trigger_game_over() -> void:
 	game_over = true
 	result_label.text = "Score %d     Coins %d" % [int(score), coin_count]
@@ -363,8 +363,6 @@ func _trigger_game_over() -> void:
 	overlay.modulate.a = 0.0
 	var tw := create_tween()
 	tw.tween_property(overlay, "modulate:a", 1.0, 0.35)
-	if run_anim != "":
-		anim_player.stop()
 	get_tree().paused = true
 
 func _on_collision_area_entered(area):
